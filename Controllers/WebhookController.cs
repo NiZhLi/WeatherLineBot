@@ -12,7 +12,7 @@ namespace WeatherBot.Controllers
         [HttpPost]
         public async Task<ActionResult> CreateWebhook(WebhookRequestDto webhookRequestDto)
         {
-            await lineBotService.HandleWebhookAsync(webhookRequestDto);
+            //await lineBotService.HandleWebhookAsync(webhookRequestDto);
             return Ok();
         }
     }
