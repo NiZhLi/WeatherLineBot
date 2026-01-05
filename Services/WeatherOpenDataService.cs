@@ -1,4 +1,5 @@
-﻿using WeatherBot.Dtos;
+﻿using System.Web;
+using WeatherBot.Dtos;
 
 namespace WeatherBot.Services
 {
@@ -9,7 +10,7 @@ namespace WeatherBot.Services
         public async Task<WeatherResponseDto> GetWeatherForecast36HrByTwLocationAsync(string locationZhTw)
         {
             var client = httpClientFactory.CreateClient();
-            var RequestURL = $"{baseUrl}?Authorization={apiKey}&locationName={locationZhTw}";
+            var RequestURL = $"{baseUrl}?Authorization={apiKey}&locationName={HttpUtility.UrlEncode(locationZhTw)}";
             var response = await client.GetAsync(RequestURL);
 
             if (response.IsSuccessStatusCode)

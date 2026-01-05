@@ -27,7 +27,7 @@ namespace WeatherBot
                 app.UseSwaggerUI();
             }
 
-            //app.UseHttpsRedirection();
+            app.UseHttpsRedirection(); // if deploy doesn't work annotate this line
 
             app.UseAuthorization();
 
