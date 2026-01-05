@@ -18,6 +18,7 @@ namespace WeatherBot.Services
                 switch (webhookEvent.type)
                 {
                     case "message":
+                        
                         await ReplyMessageAsync(webhookEvent);
                         break;
                     default:
