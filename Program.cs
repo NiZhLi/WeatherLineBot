@@ -17,6 +17,7 @@ namespace WeatherBot
             builder.Services.AddHttpClient();
 
             builder.Services.AddScoped<WeatherOpenDataService>();
+            builder.Services.AddScoped<LineBotService>();
 
             var app = builder.Build();
 
