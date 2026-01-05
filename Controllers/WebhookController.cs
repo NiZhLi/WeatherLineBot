@@ -1,16 +1,18 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using WeatherBot.Dtos.Webhook;
+using WeatherBot.Services;
 
 namespace WeatherBot.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class WebhookController(IConfiguration configuration) : ControllerBase
+    public class WebhookController(LineBotService lineBotService) : ControllerBase
     {
         [HttpPost]
-        public async Task<ActionResult> CreateWebHook()
+        public async Task<ActionResult> CreateWebhook(WebhookRequestDto webhookRequestDto)
         {
-            // Handle the webhook payload here
+            await lineBotService.HandleWebhookAsync(webhookRequestDto);
             return Ok();
         }
     }
