@@ -8,7 +8,7 @@ namespace WeatherBot.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class WebhookController(LineBotService lineBotService, ILogger logger) : ControllerBase
+    public class WebhookController(LineBotService lineBotService, ILogger<WebhookController> logger) : ControllerBase
     {
         [HttpPost]
         public async Task<ActionResult> CreateWebhook(WebhookRequestDto webhookRequestDto)

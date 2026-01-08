@@ -38,7 +38,7 @@ namespace WeatherBot.Services
             var replyMessage = new RequestReplyMessageDto()
             {
                 replyToken = webhookEvent.replyToken,
-                messages = 
+                messages = new List<Message>
                 {
                     new Message
                     {
@@ -54,7 +54,8 @@ namespace WeatherBot.Services
                 Content = JsonContent.Create(replyMessage)
             };
 
-            await client.SendAsync(requestMessage);
+            var response = await client.SendAsync(requestMessage);
+            response.EnsureSuccessStatusCode();
         }
         //public RequestReplyMessageDto gernate()
         //{
