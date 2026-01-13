@@ -5,7 +5,7 @@ using System.Net.Http.Headers;
 
 namespace WeatherBot.Services
 {
-    public class LineBotService(IConfiguration configuration, IHttpClientFactory httpClient)
+    public class LineBotService(IConfiguration configuration, IHttpClientFactory httpClient, DomainWeatherService dWeatherService, ILogger<LineBotService> logger)
     {
         private readonly string accessToken = configuration["LineWebhook:ChannelAccessToken"];
         private readonly string secret = configuration["LineWebhook:ChannelSecret"];
@@ -34,7 +34,16 @@ namespace WeatherBot.Services
             var client = httpClient.CreateClient();
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
 
-            var replyText = webhookEvent.message.text;
+            var userText = webhookEvent.message.text;
+            var replyText = string.Empty;
+            if (!IsMessageTextLocation(userText))
+            {
+                replyText = "請加上縣市";
+            }
+
+            // TODO: use utc time
+            replyText = await dWeatherService.GetTomorrowWeatherInfoAsync(DateTime.Now, userText);
+
             var replyMessage = new RequestReplyMessageDto()
             {
                 replyToken = webhookEvent.replyToken,
@@ -43,10 +52,9 @@ namespace WeatherBot.Services
                     new Message
                     {
                         type = "text",
-                        text = $"你傳送的地址是：{replyText}"
+                        text = replyText
                     }
                 }
-
             };
 
             var requestMessage = new HttpRequestMessage(HttpMethod.Post, replyApiUrl)
@@ -54,16 +62,31 @@ namespace WeatherBot.Services
                 Content = JsonContent.Create(replyMessage)
             };
 
+
             var response = await client.SendAsync(requestMessage);
-            response.EnsureSuccessStatusCode();
+            try
+            {
+                response.EnsureSuccessStatusCode();
+            }
+            catch (HttpRequestException ex) 
+            {
+                var errorContent = await response.Content.ReadAsStringAsync();
+                logger.LogError(ex, "HTTP request failed with content: {ErrorContent}", errorContent);
+            }
         }
-        //public RequestReplyMessageDto gernate()
-        //{
-        //    var textFormat = 
-        //        {
-        //        "今天天氣":"36.c"
-        //    }
-        //    return new RequestReplyMessageDto();
-        //}
+
+        public bool IsMessageTextLocation(string messageText)
+        {
+
+
+            var validLocations = new List<string> 
+            {
+                "臺北市", "新北市", "桃園市", "臺中市", "臺南市", "高雄市",
+                "基隆市", "新竹市", "嘉義市", "新竹縣", "苗栗縣", "彰化縣",
+                "南投縣", "雲林縣", "嘉義縣", "屏東縣", "宜蘭縣", "花蓮縣",
+                "臺東縣", "澎湖縣", "金門縣", "連江縣"
+            };
+            return validLocations.Contains(messageText);
+        }
     }
 }

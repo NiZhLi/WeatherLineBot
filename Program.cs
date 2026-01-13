@@ -33,6 +33,7 @@ namespace WeatherBot
 
                 builder.Services.AddScoped<WeatherOpenDataService>();
                 builder.Services.AddScoped<LineBotService>();
+                builder.Services.AddScoped<DomainWeatherService>();
 
                 var app = builder.Build();
 

@@ -7,12 +7,11 @@ namespace WeatherBot.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class WeatherController(WeatherOpenDataService weatherService) : ControllerBase
+    public class OpenWeatherController(WeatherOpenDataService weatherService) : ControllerBase
     {
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<WeatherResponseDto>>> GetWeather([FromQuery] string city)
+        [HttpGet("v1")]
+        public async Task<ActionResult<IEnumerable<WeatherResponseDto>>> Get36HRweather([FromQuery] string city)
         {
-          
             var weatherData = await weatherService.GetWeatherForecast36HrByTwLocationAsync(city);
             if (weatherData == null)
             {
