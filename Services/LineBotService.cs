@@ -99,15 +99,15 @@ namespace WeatherBot.Services
             };
 
 
-            var response = await client.SendAsync(requestMessage);
+            
             try
             {
+                var response = await client.SendAsync(requestMessage);
                 response.EnsureSuccessStatusCode();
             }
             catch (HttpRequestException ex) 
             {
-                var errorContent = await response.Content.ReadAsStringAsync();
-                logger.LogError(ex, "HTTP request failed with content: {ErrorContent}", errorContent);
+                logger.LogError(ex, "HTTP request failed with content");
             }
         }
 
