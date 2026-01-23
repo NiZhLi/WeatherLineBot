@@ -14,19 +14,8 @@ namespace WeatherBot.Services
 
         public async Task HandleWebhookAsync(WebhookRequestDto WebhookRequestDto)
         {
-            if (WebhookRequestDto?.events == null || !WebhookRequestDto.events.Any())
-            {
-                logger.LogWarning("Webhook request is null or contains no events");
-                return;
-            }
-
             foreach (var webhookEvent in WebhookRequestDto.events)
             {
-                if (webhookEvent == null)
-                {
-                    logger.LogWarning("Webhook event is null, skipping");
-                    continue;
-                }
 
                 switch (webhookEvent.type)
                 {
@@ -43,42 +32,36 @@ namespace WeatherBot.Services
 
         public async Task ReplyMessageAsync(WebhookEventDto webhookEvent)
         {
-            // 檢查 message 是否為 null
-            if (webhookEvent?.message == null)
-            {
-                logger.LogWarning("Webhook event message is null. Event type: {EventType}", webhookEvent?.type);
-                return;
-            }
-
             var client = httpClient.CreateClient();
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
 
-            var userText = webhookEvent.message.text ?? string.Empty;
-            var userTextType = webhookEvent.message.type ?? string.Empty;
+            var userText = webhookEvent.message.text;
+            //var userTextType = webhookEvent.message.type;
             var replyText = "( ^ω^) 看不懂喔";
 
             // 判斷傳遞的為位置資訊或文字
-            if (userTextType == "text")
-            {
-                if (string.IsNullOrWhiteSpace(userText))
-                {
-                    replyText = "請提供縣市名稱";
-                }
-                else
-                {
-                    userText = GetLocationFromMessage(userText);
+            //if (userTextType == "text")
+            //{
+            //    if (string.IsNullOrWhiteSpace(userText))
+            //    {
+            //        replyText = "請提供縣市名稱";
+            //    }
+            //    else
+            //    {
+            //        userText = GetLocationFromMessage(userText);
 
-                    // TODO: use utc time
-                    replyText = await dWeatherService.GetTomorrowWeatherInfoAsync(DateTime.Now, userText);
-                }
-            }
-            else if (userTextType == "location")
-            {
-                // TODO: use utc time
-                // 因直接獲取line json text作為地址參數查詢，故使用者傳送GPS資訊時可以直接存取
-                replyText = await dWeatherService.GetTomorrowWeatherInfoAsync(DateTime.Now, userText);
-            }
+            //        // TODO: use utc time
+            //        replyText = await dWeatherService.GetTomorrowWeatherInfoAsync(DateTime.Now, userText);
+            //    }
+            //}
+            //else if (userTextType == "location")
+            //{
+            //    // TODO: use utc time
+            //    // 因直接獲取line json text作為地址參數查詢，故使用者傳送GPS資訊時可以直接存取
+            //    replyText = await dWeatherService.GetTomorrowWeatherInfoAsync(DateTime.Now, userText);
+            //}
 
+           replyText = await dWeatherService.GetTomorrowWeatherInfoAsync(DateTime.Now, userText);
 
             var replyMessage = new RequestReplyMessageDto()
             {
