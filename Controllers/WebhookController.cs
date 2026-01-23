@@ -13,15 +13,15 @@ namespace WeatherBot.Controllers
         [HttpPost]
         public async Task<ActionResult> CreateWebhook(WebhookRequestDto webhookRequestDto)
         {
-            try
-            {
-                await lineBotService.HandleWebhookAsync(webhookRequestDto);
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "Webhook 處理時發生錯誤: {ErrorMessage}", ex.Message);
-                return StatusCode(StatusCodes.Status500InternalServerError, "An error occurred while processing the webhook.");
-            }   
+            //try
+            //{
+            //    await lineBotService.HandleWebhookAsync(webhookRequestDto);
+            //}
+            //catch (Exception ex)
+            //{
+            //    logger.LogError(ex, "Webhook 處理時發生錯誤: {ErrorMessage}", ex.Message);
+            //    return StatusCode(StatusCodes.Status500InternalServerError, "An error occurred while processing the webhook.");
+            //}   
             
             return Ok();
         }

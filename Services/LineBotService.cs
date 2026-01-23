@@ -36,32 +36,25 @@ namespace WeatherBot.Services
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
 
             var userText = webhookEvent.message.text;
-            //var userTextType = webhookEvent.message.type;
+            var userTextType = webhookEvent.message.type;
             var replyText = "( ^ω^) 看不懂喔";
 
             // 判斷傳遞的為位置資訊或文字
-            //if (userTextType == "text")
-            //{
-            //    if (string.IsNullOrWhiteSpace(userText))
-            //    {
-            //        replyText = "請提供縣市名稱";
-            //    }
-            //    else
-            //    {
-            //        userText = GetLocationFromMessage(userText);
+            if (userTextType == "text")
+            {
 
-            //        // TODO: use utc time
-            //        replyText = await dWeatherService.GetTomorrowWeatherInfoAsync(DateTime.Now, userText);
-            //    }
-            //}
-            //else if (userTextType == "location")
-            //{
-            //    // TODO: use utc time
-            //    // 因直接獲取line json text作為地址參數查詢，故使用者傳送GPS資訊時可以直接存取
-            //    replyText = await dWeatherService.GetTomorrowWeatherInfoAsync(DateTime.Now, userText);
-            //}
+                userText = GetLocationFromMessage(userText);
 
-           replyText = await dWeatherService.GetTomorrowWeatherInfoAsync(DateTime.Now, userText);
+                // TODO: use utc time
+                replyText = await dWeatherService.GetTomorrowWeatherInfoAsync(DateTime.Now, userText);
+
+            }
+            else if (userTextType == "location")
+            {
+                // TODO: use utc time
+                // 因直接獲取line json text作為地址參數查詢，故使用者傳送GPS資訊時可以直接存取
+                replyText = await dWeatherService.GetTomorrowWeatherInfoAsync(DateTime.Now, userText);
+            }
 
             var replyMessage = new RequestReplyMessageDto()
             {
