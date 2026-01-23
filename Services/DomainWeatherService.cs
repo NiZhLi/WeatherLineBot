@@ -39,12 +39,13 @@ namespace WeatherBot.Services
                 $"天氣狀況：{wx}\n" +
                 $"最高溫：{maxT}°C\n" +
                 $"最低溫：{minT}°C\n" +
-                $"體感溫度：{ci}" +
+                $"體感溫度：{ci}\n" +
                 $"降雨機率：{pop}%";
 
             return formattedMessage;
         }
 
-        
+ 
+
     }
 }
