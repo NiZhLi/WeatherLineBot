@@ -37,8 +37,19 @@ namespace WeatherBot
 
                 var app = builder.Build();
 
-                var port = Environment.GetEnvironmentVariable("PORT") ?? "3000";
-                app.Urls.Add($"http://0.0.0.0:{port}");
+                //var port = Environment.GetEnvironmentVariable("PORT") ?? "3000";
+                //app.Urls.Add($"http://0.0.0.0:{port}");
+
+                //// 顯示伺服器啟動訊息
+                //Console.WriteLine($"Server running on port {port}");
+                //Console.WriteLine(" Server listening on all available interfaces");
+
+                // Railway Environment Variables Debugging
+                Console.WriteLine(" Railway Environment Variables:");
+                Console.WriteLine("RAILWAY_ENVIRONMENT: " + Environment.GetEnvironmentVariable("RAILWAY_ENVIRONMENT"));
+                Console.WriteLine("RAILWAY_SERVICE_NAME: " + Environment.GetEnvironmentVariable("RAILWAY_SERVICE_NAME"));
+                Console.WriteLine("RAILWAY_PUBLIC_DOMAIN: " + Environment.GetEnvironmentVariable("RAILWAY_PUBLIC_DOMAIN"));
+                Console.WriteLine("RAILWAY_PRIVATE_DOMAIN: " + Environment.GetEnvironmentVariable("RAILWAY_PRIVATE_DOMAIN"));
 
                 // Configure the HTTP request pipeline.
                 if (app.Environment.IsDevelopment())
