@@ -83,6 +83,7 @@ namespace WeatherBot.Services
             }
             catch (HttpRequestException ex) 
             {
+                Console.WriteLine(ex.Message);
                 logger.LogError(ex, "HTTP request failed with content");
             }
         }

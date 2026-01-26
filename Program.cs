@@ -43,6 +43,7 @@ namespace WeatherBot
                     app.UseSwagger();
                     app.UseSwaggerUI();
                 }
+                app.UseDeveloperExceptionPage();
 
                 app.UseSerilogRequestLogging();
                 //app.UseHttpsRedirection(); // if deploy doesn't work annotate this line
