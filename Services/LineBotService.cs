@@ -40,21 +40,21 @@ namespace WeatherBot.Services
             var replyText = "( ^ω^) 看不懂喔";
 
             // 判斷傳遞的為位置資訊或文字
-            if (userTextType == "text")
-            {
+            //if (userTextType == "text")
+            //{
 
-                userText = GetLocationFromMessage(userText);
+            //    userText = GetLocationFromMessage(userText);
 
-                // TODO: use utc time
-                replyText = await dWeatherService.GetTomorrowWeatherInfoAsync(DateTime.Now, userText);
+            //    // TODO: use utc time
+            //    replyText = await dWeatherService.GetTomorrowWeatherInfoAsync(DateTime.Now, userText);
 
-            }
-            else if (userTextType == "location")
-            {
-                // TODO: use utc time
-                // 因直接獲取line json text作為地址參數查詢，故使用者傳送GPS資訊時可以直接存取
-                replyText = await dWeatherService.GetTomorrowWeatherInfoAsync(DateTime.Now, userText);
-            }
+            //}
+            //else if (userTextType == "location")
+            //{
+            //    // TODO: use utc time
+            //    // 因直接獲取line json text作為地址參數查詢，故使用者傳送GPS資訊時可以直接存取
+            //    replyText = await dWeatherService.GetTomorrowWeatherInfoAsync(DateTime.Now, userText);
+            //}
 
             var replyMessage = new RequestReplyMessageDto()
             {
