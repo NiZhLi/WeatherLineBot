@@ -1,6 +1,9 @@
 using Serilog;
 using Serilog.Events;
 using WeatherBot.Services;
+using WeatherBot.Services.LineMessaging;
+using WeatherBot.Services.LineMessaging.Handlers;
+using WeatherBot.Services.LineMessaging.Strategies;
 
 namespace WeatherBot
 {
@@ -32,24 +35,15 @@ namespace WeatherBot
                 builder.Services.AddHttpClient();
 
                 builder.Services.AddScoped<WeatherOpenDataService>();
-                builder.Services.AddScoped<LineBotService>();
                 builder.Services.AddScoped<DomainWeatherService>();
+                builder.Services.AddSingleton<ITaiwanLocationResolver, TaiwanLocationResolver>();
+                builder.Services.AddScoped<IWebhookEventHandler, MessageWebhookEventHandler>();
+                builder.Services.AddScoped<IMessageStrategy, KeywordReplyMessageStrategy>();
+                builder.Services.AddScoped<IMessageStrategy, LocationMessageStrategy>();
+                builder.Services.AddScoped<IMessageStrategy, CityWeatherMessageStrategy>();
+                builder.Services.AddScoped<LineBotService>();
 
                 var app = builder.Build();
-
-                //var port = Environment.GetEnvironmentVariable("PORT") ?? "3000";
-                //app.Urls.Add($"http://0.0.0.0:{port}");
-
-                //// 顯示伺服器啟動訊息
-                //Console.WriteLine($"Server running on port {port}");
-                //Console.WriteLine(" Server listening on all available interfaces");
-
-                // Railway Environment Variables Debugging
-                Console.WriteLine(" Railway Environment Variables:");
-                Console.WriteLine("RAILWAY_ENVIRONMENT: " + Environment.GetEnvironmentVariable("RAILWAY_ENVIRONMENT"));
-                Console.WriteLine("RAILWAY_SERVICE_NAME: " + Environment.GetEnvironmentVariable("RAILWAY_SERVICE_NAME"));
-                Console.WriteLine("RAILWAY_PUBLIC_DOMAIN: " + Environment.GetEnvironmentVariable("RAILWAY_PUBLIC_DOMAIN"));
-                Console.WriteLine("RAILWAY_PRIVATE_DOMAIN: " + Environment.GetEnvironmentVariable("RAILWAY_PRIVATE_DOMAIN"));
 
                 // Configure the HTTP request pipeline.
                 if (app.Environment.IsDevelopment())
