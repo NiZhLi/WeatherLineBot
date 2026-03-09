@@ -5,10 +5,74 @@ namespace WeatherBot.Services
     public class DomainWeatherService
     {
         private readonly WeatherOpenDataService _weatherService;
+        private readonly ILogger<DomainWeatherService> _logger;
 
         public DomainWeatherService(WeatherOpenDataService weatherService)
         {
             _weatherService = weatherService;
+        }
+
+
+        //明6-晚間(18)天氣預報(詳細)
+        public async Task<List<string>> GetTomorrowDetailAsync(DateTime nowDateTime, string location)
+        {
+            var tomorrowStartDate = nowDateTime.Date.AddDays(1);
+            var timeFrom = tomorrowStartDate.AddHours(6); // 明天早上6點
+            var timeTo = tomorrowStartDate.AddHours(18); // 明天晚上6點(溫度等只到17時)
+
+            return await GetWeatherDetailInternalAsync(location, timeFrom, timeTo);
+        }
+
+        //今日查詢期間天氣預報(詳細)(至24時)
+        public async Task<List<string>> GetTodayDetailAsync(DateTime nowDateTime, string location)
+        {
+            var startDate = nowDateTime.Date;
+            var timeTo = startDate.AddHours(24); // 今天晚上24點(溫度等只到23時)
+
+            return await GetWeatherDetailInternalAsync(location, null, timeTo);
+        }
+
+        private async Task<List<string>> GetWeatherDetailInternalAsync(string location, DateTime? timeFrom, DateTime? timeTo)
+        {
+            var element = new List<string> { "溫度", "相對濕度", "體感溫度", "蒲風級", "3小時降雨機率", "天氣現象" };
+
+            // 使用 WeatherService 取得當天天氣資訊
+            var Data = await _weatherService.ThreeDayDetailAsync(location, element, timeFrom, timeTo);
+
+            // 提取天氣資訊
+            var locationData = Data.records.Locations.FirstOrDefault()?.Location.FirstOrDefault();
+            if (locationData == null)
+            {
+                return new List<string> { "無法取得該位置的天氣資訊資料。" };
+            }
+
+            List<string> GetElementValues(string elementName, Func<Dtos.Weather.Elementvalue, string?> selector)
+            {
+                return locationData.WeatherElement
+                    .Where(e => e.ElementName == elementName)
+                    .SelectMany(e => e.Time)
+                    .Select(t => selector(t.ElementValue.FirstOrDefault()))
+                    .Where(v => v != null)
+                    .ToList()!;
+            }
+
+            // 各元素名對應氣象署api(domain：風速取蒲風級)
+            var temperatureList = GetElementValues("溫度", ev => ev.Temperature);
+            var humidityList = GetElementValues("相對濕度", ev => ev.RelativeHumidity);
+            var apparentTempList = GetElementValues("體感溫度", ev => ev.ApparentTemperature);
+            var beaufortList = GetElementValues("風速", ev => ev.BeaufortScale);
+            var popList = GetElementValues("3小時降雨機率", ev => ev.ProbabilityOfPrecipitation);
+            var weatherList = GetElementValues("天氣現象", ev => ev.Weather);
+
+            return new List<string>
+            {
+                $"溫度: {string.Join(", ", temperatureList)}",
+                $"相對濕度: {string.Join(", ", humidityList)}",
+                $"體感溫度: {string.Join(", ", apparentTempList)}",
+                $"蒲風級: {string.Join(", ", beaufortList)}",
+                $"3小時降雨機率: {string.Join(", ", popList)}",
+                $"天氣現象: {string.Join(", ", weatherList)}"
+            };
         }
 
         // 天氣
@@ -45,7 +109,7 @@ namespace WeatherBot.Services
             return formattedMessage;
         }
 
- 
+        
 
     }
 }

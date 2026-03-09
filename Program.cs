@@ -36,6 +36,7 @@ namespace WeatherBot
 
                 builder.Services.AddScoped<WeatherOpenDataService>();
                 builder.Services.AddScoped<DomainWeatherService>();
+                builder.Services.AddScoped<DomainMessageService>();
                 builder.Services.AddSingleton<ITaiwanLocationResolver, TaiwanLocationResolver>();
                 builder.Services.AddScoped<IWebhookEventHandler, MessageWebhookEventHandler>();
                 builder.Services.AddScoped<IMessageStrategy, KeywordReplyMessageStrategy>();
@@ -58,6 +59,24 @@ namespace WeatherBot
 
 
                 app.MapControllers();
+                
+                app.MapGet("/test-weather", async (DomainWeatherService weatherService) =>
+                {
+                    var result = await weatherService.GetTomorrowDetailAsync(DateTime.Now, "臺北市");
+                    return result;
+                });
+                app.MapGet("/test-todayweatherMessage", async (DomainMessageService messageService, DomainWeatherService weatherService) =>
+                {
+                    var weatherInfo = await weatherService.GetTodayDetailAsync(DateTime.Now, "臺北市");
+                    var result = messageService.GetWeatherAdviceMessage(weatherInfo);
+                    return result;
+                });
+                app.MapGet("/test-tomorroweatherMessage", async (DomainMessageService messageService, DomainWeatherService weatherService) =>
+                {
+                    var weatherInfo = await weatherService.GetTomorrowDetailAsync(DateTime.Now, "臺北市");
+                    var result = messageService.GetWeatherAdviceMessage(weatherInfo);
+                    return result;
+                });
 
                 app.Run();
             }
