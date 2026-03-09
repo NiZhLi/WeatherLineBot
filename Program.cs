@@ -65,7 +65,13 @@ namespace WeatherBot
                     var result = await weatherService.GetTomorrowDetailAsync(DateTime.Now, "臺北市");
                     return result;
                 });
-                app.MapGet("/test-weatherMessage", async (DomainMessageService messageService, DomainWeatherService weatherService) =>
+                app.MapGet("/test-todayweatherMessage", async (DomainMessageService messageService, DomainWeatherService weatherService) =>
+                {
+                    var weatherInfo = await weatherService.GetTodayDetailAsync(DateTime.Now, "臺北市");
+                    var result = messageService.GetWeatherAdviceMessage(weatherInfo);
+                    return result;
+                });
+                app.MapGet("/test-tomorroweatherMessage", async (DomainMessageService messageService, DomainWeatherService weatherService) =>
                 {
                     var weatherInfo = await weatherService.GetTomorrowDetailAsync(DateTime.Now, "臺北市");
                     var result = messageService.GetWeatherAdviceMessage(weatherInfo);

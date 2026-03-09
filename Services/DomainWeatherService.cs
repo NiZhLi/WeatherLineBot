@@ -56,10 +56,11 @@ namespace WeatherBot.Services
                     .ToList()!;
             }
 
+            // 各元素名對應氣象署api(domain：風速取蒲風級)
             var temperatureList = GetElementValues("溫度", ev => ev.Temperature);
             var humidityList = GetElementValues("相對濕度", ev => ev.RelativeHumidity);
             var apparentTempList = GetElementValues("體感溫度", ev => ev.ApparentTemperature);
-            var beaufortList = GetElementValues("蒲風級", ev => ev.BeaufortScale);
+            var beaufortList = GetElementValues("風速", ev => ev.BeaufortScale);
             var popList = GetElementValues("3小時降雨機率", ev => ev.ProbabilityOfPrecipitation);
             var weatherList = GetElementValues("天氣現象", ev => ev.Weather);
 
