@@ -17,7 +17,10 @@ namespace WeatherBot.Services.LineMessaging.Strategies
 
         public async Task<string?> CreateReplyAsync(WebhookEventDto webhookEvent, CancellationToken cancellationToken = default)
         {
-            var userText = webhookEvent.message?.text;
+            var userText = webhookEvent.message?.address
+                           ?? webhookEvent.message?.title
+                           ?? webhookEvent.message?.text;
+
             if (string.IsNullOrWhiteSpace(userText))
             {
                 return "未能讀取到您的位置資訊，請輸入縣市名稱再試一次。";

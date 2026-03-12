@@ -38,11 +38,20 @@ namespace WeatherBot
                 builder.Services.AddScoped<DomainWeatherService>();
                 builder.Services.AddScoped<DomainMessageService>();
                 builder.Services.AddSingleton<ITaiwanLocationResolver, TaiwanLocationResolver>();
+
+                // Register Line Bot Service
+                builder.Services.AddScoped<ILineBotService, LineBotService>();
+
+                // Register webhook event handlers
                 builder.Services.AddScoped<IWebhookEventHandler, MessageWebhookEventHandler>();
+                builder.Services.AddScoped<IWebhookEventHandler, FollowWebhookEventHandler>();
+                builder.Services.AddScoped<IWebhookEventHandler, UnfollowWebhookEventHandler>();
+                builder.Services.AddScoped<IWebhookEventHandler, PostbackWebhookEventHandler>();
+
+                // Register message strategies
                 builder.Services.AddScoped<IMessageStrategy, KeywordReplyMessageStrategy>();
                 builder.Services.AddScoped<IMessageStrategy, LocationMessageStrategy>();
                 builder.Services.AddScoped<IMessageStrategy, CityWeatherMessageStrategy>();
-                builder.Services.AddScoped<LineBotService>();
 
                 var app = builder.Build();
 

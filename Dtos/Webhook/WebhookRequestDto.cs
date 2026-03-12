@@ -6,7 +6,7 @@
     /// </summary>
     public class WebhookRequestDto
     {
-        public string destination { get; set; }
-        public WebhookEventDto[] events { get; set; }
+        public string destination { get; set; } = string.Empty;
+        public WebhookEventDto[] events { get; set; } = [];
     }
 }
