@@ -1,4 +1,5 @@
 ﻿using WeatherBot.Dtos.Webhook;
+using WeatherBot.Dtos.Domain;
 
 namespace WeatherBot.Services
 {
@@ -14,7 +15,7 @@ namespace WeatherBot.Services
 
 
         //明6-晚間(18)天氣預報(詳細)
-        public async Task<List<string>> GetTomorrowDetailAsync(DateTime nowDateTime, string location)
+        public async Task<WeatherDetailDto> GetTomorrowDetailAsync(DateTime nowDateTime, string location)
         {
             var tomorrowStartDate = nowDateTime.Date.AddDays(1);
             var timeFrom = tomorrowStartDate.AddHours(6); // 明天早上6點
@@ -24,7 +25,7 @@ namespace WeatherBot.Services
         }
 
         //今日查詢期間天氣預報(詳細)(至24時)
-        public async Task<List<string>> GetTodayDetailAsync(DateTime nowDateTime, string location)
+        public async Task<WeatherDetailDto> GetTodayDetailAsync(DateTime nowDateTime, string location)
         {
             var startDate = nowDateTime.Date;
             var timeTo = startDate.AddHours(24); // 今天晚上24點(溫度等只到23時)
@@ -32,7 +33,7 @@ namespace WeatherBot.Services
             return await GetWeatherDetailInternalAsync(location, null, timeTo);
         }
 
-        private async Task<List<string>> GetWeatherDetailInternalAsync(string location, DateTime? timeFrom, DateTime? timeTo)
+        private async Task<WeatherDetailDto> GetWeatherDetailInternalAsync(string location, DateTime? timeFrom, DateTime? timeTo)
         {
             var element = new List<string> { "溫度", "相對濕度", "體感溫度", "蒲風級", "3小時降雨機率", "天氣現象" };
 
@@ -43,7 +44,7 @@ namespace WeatherBot.Services
             var locationData = Data.records.Locations.FirstOrDefault()?.Location.FirstOrDefault();
             if (locationData == null)
             {
-                return new List<string> { "無法取得該位置的天氣資訊資料。" };
+                return new WeatherDetailDto();
             }
 
             List<string> GetElementValues(string elementName, Func<Dtos.Weather.Elementvalue, string?> selector)
@@ -64,14 +65,20 @@ namespace WeatherBot.Services
             var popList = GetElementValues("3小時降雨機率", ev => ev.ProbabilityOfPrecipitation);
             var weatherList = GetElementValues("天氣現象", ev => ev.Weather);
 
-            return new List<string>
+            List<double> ToDoubleList(List<string> values) => values
+                .Select(v => double.TryParse(v, out var result) ? result : (double?)null)
+                .Where(v => v.HasValue)
+                .Select(v => v!.Value)
+                .ToList();
+
+            return new WeatherDetailDto
             {
-                $"溫度: {string.Join(", ", temperatureList)}",
-                $"相對濕度: {string.Join(", ", humidityList)}",
-                $"體感溫度: {string.Join(", ", apparentTempList)}",
-                $"蒲風級: {string.Join(", ", beaufortList)}",
-                $"3小時降雨機率: {string.Join(", ", popList)}",
-                $"天氣現象: {string.Join(", ", weatherList)}"
+                Temperatures = ToDoubleList(temperatureList),
+                Humidities = ToDoubleList(humidityList),
+                ApparentTemperatures = ToDoubleList(apparentTempList),
+                BeaufortScales = ToDoubleList(beaufortList),
+                PrecipitationProbabilities = popList,
+                WeatherPhenomena = weatherList
             };
         }
 
