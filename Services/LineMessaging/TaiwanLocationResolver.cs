@@ -13,7 +13,7 @@ namespace WeatherBot.Services.LineMessaging
         private static readonly HashSet<string> ValidLocations = new()
         {
             "臺北", "新北", "桃園", "臺中", "臺南", "高雄",
-            "基隆", "新竹", "嘉義", "苗栗", "彰化", "南投",
+            "基隆", "新竹縣","新竹市", "嘉義縣", "嘉義市", "苗栗", "彰化", "南投",
             "雲林", "屏東", "宜蘭", "花蓮", "臺東", "澎湖",
             "金門", "連江"
         };
@@ -28,10 +28,10 @@ namespace WeatherBot.Services.LineMessaging
             "苗栗", "彰化", "南投", "雲林", "屏東", "宜蘭", "花蓮", "臺東", "澎湖", "金門", "連江"
         };
 
-        private static readonly HashSet<string> CityAndCounty = new()
-        {
-            "新竹", "嘉義"
-        };
+        //private static readonly HashSet<string> CityAndCounty = new()
+        //{
+        //    "新竹縣", "嘉義縣", "新竹市", "嘉義市"
+        //};
 
         public string Resolve(string? messageText)
         {
@@ -44,7 +44,7 @@ namespace WeatherBot.Services.LineMessaging
 
             foreach (var location in ValidLocations)
             {
-                if (!normalizedMessage.Contains(location, StringComparison.Ordinal))
+                if (!normalizedMessage.Contains(location))
                 {
                     continue;
                 }
@@ -59,10 +59,7 @@ namespace WeatherBot.Services.LineMessaging
                     return location + "縣";
                 }
 
-                if (CityAndCounty.Contains(location))
-                {
-                    return location + "市";
-                }
+                return location;
             }
 
             return messageText;

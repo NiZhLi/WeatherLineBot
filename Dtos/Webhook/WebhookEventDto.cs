@@ -1,4 +1,6 @@
-﻿namespace WeatherBot.Dtos.Webhook
+﻿using System.Text.Json.Serialization;
+
+namespace WeatherBot.Dtos.Webhook
 {
     /// <summary>
     /// Message Event Common properties
@@ -6,26 +8,35 @@
     /// </summary>
     public class WebhookEventDto
     {
-        public string replyToken { get; set; }
-        public string type { get; set; }
-        public string mode { get; set; }
+        public string replyToken { get; set; } = string.Empty;
+        public string type { get; set; } = string.Empty;
+        public string mode { get; set; } = string.Empty;
         public long timestamp { get; set; }
-        public Source source { get; set; }
-        public string webhookEventId { get; set; }
-        public Deliverycontext deliveryContext { get; set; }
-        public EventMessageTextDto message { get; set; }
+        public Source source { get; set; } = new();
+        public string webhookEventId { get; set; } = string.Empty;
+        public DeliveryContextDto deliveryContext { get; set; } = new();
+        public EventMessageTextDto? message { get; set; }
+        public PostbackDto? postback { get; set; }
     }
 
     public class Source
     {
-        public string type { get; set; }
-        public string groupId { get; set; }
-        public string userId { get; set; }
+        public string type { get; set; } = string.Empty;
+        public string? groupId { get; set; }
+        public string? userId { get; set; }
     }
 
-    public class Deliverycontext
+    public class DeliveryContextDto
     {
         public bool isRedelivery { get; set; }
+    }
+
+    public class PostbackDto
+    {
+        public string? data { get; set; }
+
+        [JsonPropertyName("params")]
+        public object? paramsData { get; set; }
     }
 
 }

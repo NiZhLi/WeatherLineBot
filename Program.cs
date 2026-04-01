@@ -4,6 +4,7 @@ using WeatherBot.Services;
 using WeatherBot.Services.LineMessaging;
 using WeatherBot.Services.LineMessaging.Handlers;
 using WeatherBot.Services.LineMessaging.Strategies;
+using WeatherBot.Services.LineMessaging.UserPreferences;
 
 namespace WeatherBot
 {
@@ -38,11 +39,22 @@ namespace WeatherBot
                 builder.Services.AddScoped<DomainWeatherService>();
                 builder.Services.AddScoped<DomainMessageService>();
                 builder.Services.AddSingleton<ITaiwanLocationResolver, TaiwanLocationResolver>();
+                builder.Services.AddSingleton<IUserPreferenceStore, MongoUserPreferenceStore>();
+                builder.Services.AddSingleton<ILocationChangeStateStore, InMemoryLocationChangeStateStore>();
+
+                // Register Line Bot Service
+                builder.Services.AddScoped<ILineBotService, LineBotService>();
+
+                // Register webhook event handlers
                 builder.Services.AddScoped<IWebhookEventHandler, MessageWebhookEventHandler>();
+                builder.Services.AddScoped<IWebhookEventHandler, FollowWebhookEventHandler>();
+                builder.Services.AddScoped<IWebhookEventHandler, UnfollowWebhookEventHandler>();
+                builder.Services.AddScoped<IWebhookEventHandler, PostbackWebhookEventHandler>();
+
+                // Register message strategies
                 builder.Services.AddScoped<IMessageStrategy, KeywordReplyMessageStrategy>();
-                builder.Services.AddScoped<IMessageStrategy, LocationMessageStrategy>();
                 builder.Services.AddScoped<IMessageStrategy, CityWeatherMessageStrategy>();
-                builder.Services.AddScoped<LineBotService>();
+                builder.Services.AddScoped<IMessageStrategy, LocationMessageStrategy>();
 
                 var app = builder.Build();
 
@@ -60,23 +72,6 @@ namespace WeatherBot
 
                 app.MapControllers();
                 
-                app.MapGet("/test-weather", async (DomainWeatherService weatherService) =>
-                {
-                    var result = await weatherService.GetTomorrowDetailAsync(DateTime.Now, "臺北市");
-                    return result;
-                });
-                app.MapGet("/test-todayweatherMessage", async (DomainMessageService messageService, DomainWeatherService weatherService) =>
-                {
-                    var weatherInfo = await weatherService.GetTodayDetailAsync(DateTime.Now, "臺北市");
-                    var result = messageService.GetWeatherAdviceMessage(weatherInfo);
-                    return result;
-                });
-                app.MapGet("/test-tomorroweatherMessage", async (DomainMessageService messageService, DomainWeatherService weatherService) =>
-                {
-                    var weatherInfo = await weatherService.GetTomorrowDetailAsync(DateTime.Now, "臺北市");
-                    var result = messageService.GetWeatherAdviceMessage(weatherInfo);
-                    return result;
-                });
 
                 app.Run();
             }

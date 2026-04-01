@@ -8,22 +8,29 @@ using WeatherBot.Services.LineMessaging.Strategies;
 
 namespace WeatherBot.Services.LineMessaging.Handlers
 {
-    public class MessageWebhookEventHandler(IEnumerable<IMessageStrategy> strategies, ILogger<MessageWebhookEventHandler> logger) : IWebhookEventHandler
+    public class MessageWebhookEventHandler : BaseWebhookEventHandler<MessageWebhookEventHandler>
     {
-        private readonly IEnumerable<IMessageStrategy> _strategies = strategies;
-        private readonly ILogger<MessageWebhookEventHandler> _logger = logger;
+        private readonly IEnumerable<IMessageStrategy> _strategies;
 
-        public bool CanHandle(WebhookEventDto webhookEvent)
+        public MessageWebhookEventHandler(
+            IEnumerable<IMessageStrategy> strategies, 
+            ILogger<MessageWebhookEventHandler> logger) 
+            : base(logger)
+        {
+            _strategies = strategies;
+        }
+
+        public override bool CanHandle(WebhookEventDto webhookEvent)
         {
             return string.Equals(webhookEvent.type, "message", StringComparison.OrdinalIgnoreCase);
         }
 
-        public async Task<RequestReplyMessageDto?> HandleAsync(WebhookEventDto webhookEvent, CancellationToken cancellationToken = default)
+        protected override async Task<RequestReplyMessageDto?> HandleEventAsync(WebhookEventDto webhookEvent, CancellationToken cancellationToken)
         {
             var strategy = _strategies.FirstOrDefault(s => s.CanHandle(webhookEvent));
             if (strategy == null)
             {
-                _logger.LogInformation("No message strategy registered for message type {MessageType}", webhookEvent.message?.type);
+                Logger.LogInformation("No message strategy registered for message type {MessageType}", webhookEvent.message?.type);
                 return null;
             }
 
@@ -33,18 +40,7 @@ namespace WeatherBot.Services.LineMessaging.Handlers
                 return null;
             }
 
-            return new RequestReplyMessageDto
-            {
-                replyToken = webhookEvent.replyToken,
-                messages = new List<Message>
-                {
-                    new Message
-                    {
-                        type = "text",
-                        text = replyText
-                    }
-                }
-            };
+            return CreateTextReplyMessage(webhookEvent.replyToken, replyText);
         }
     }
 }

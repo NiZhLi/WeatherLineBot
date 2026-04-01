@@ -4,13 +4,18 @@ using System.Threading.Tasks;
 using WeatherBot.Dtos.Webhook;
 using WeatherBot.Services;
 using WeatherBot.Services.LineMessaging;
+using WeatherBot.Services.LineMessaging.UserPreferences;
 
 namespace WeatherBot.Services.LineMessaging.Strategies
 {
-    public class CityWeatherMessageStrategy(DomainWeatherService domainWeatherService, ITaiwanLocationResolver locationResolver) : IMessageStrategy
+    public class CityWeatherMessageStrategy(
+        DomainWeatherService domainWeatherService,
+        ITaiwanLocationResolver locationResolver,
+        IUserPreferenceStore userPreferenceStore) : IMessageStrategy
     {
         private readonly DomainWeatherService _domainWeatherService = domainWeatherService;
         private readonly ITaiwanLocationResolver _locationResolver = locationResolver;
+        private readonly IUserPreferenceStore _userPreferenceStore = userPreferenceStore;
 
         public bool CanHandle(WebhookEventDto webhookEvent)
         {
@@ -20,18 +25,10 @@ namespace WeatherBot.Services.LineMessaging.Strategies
         public async Task<string?> CreateReplyAsync(WebhookEventDto webhookEvent, CancellationToken cancellationToken = default)
         {
             var messageText = webhookEvent.message?.text;
-            if (string.IsNullOrWhiteSpace(messageText))
-            {
-                return "請輸入想查詢的縣市名稱。";
-            }
-
             var location = _locationResolver.Resolve(messageText);
-            if (string.IsNullOrWhiteSpace(location))
-            {
-                return "未能識別縣市名稱，請重新輸入。";
-            }
 
             return await _domainWeatherService.GetTomorrowWeatherInfoAsync(DateTime.UtcNow, location);
         }
+
     }
 }
