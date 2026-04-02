@@ -1,7 +1,7 @@
 ﻿using System.Web;
 using System.Text.Json;
-using WeatherBot.Dtos;
-using WeatherBot.Dtos.Weather;
+using WeatherBot.Dtos.Weather.v2;
+using WeatherBot.Dtos.Weather.v1;
 
 namespace WeatherBot.Services
 {
@@ -60,11 +60,14 @@ namespace WeatherBot.Services
             string timeFromStr = timeFrom?.ToString("yyyy-MM-ddTHH:mm:ss") ?? "";
             string timeToStr = timeTo?.ToString("yyyy-MM-ddTHH:mm:ss") ?? "";
 
+            // 使用 LINQ 進行編碼並用逗號連接
+            string formatElement = string.Join(",", element.Select(item => HttpUtility.UrlEncode(item)));
+
             var requestUrl = $"{BaseApiUrl}" +
                 $"{TWDayDetailEndpoint}" +
                 $"?Authorization={apiKey}" +
                 $"&LocationName={location}" +
-                $"&elementName={string.Join(",", element)}" +
+                $"&ElementName={formatElement}" +
                 $"&timeFrom={timeFromStr}" +
                 $"&timeTo={timeToStr}";
 

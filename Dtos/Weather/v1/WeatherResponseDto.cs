@@ -1,4 +1,4 @@
-﻿namespace WeatherBot.Dtos
+﻿namespace WeatherBot.Dtos.Weather.v1
 {
     public class WeatherResponseDto
     {

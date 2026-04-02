@@ -30,7 +30,12 @@ namespace WeatherBot
 
                 builder.Services.AddControllers();
                 builder.Services.AddEndpointsApiExplorer();
-                builder.Services.AddSwaggerGen();
+                builder.Services.AddSwaggerGen(options =>
+                {
+                    // 讓 Swagger 使用包含命名空間的完整類別名稱作為 Schema Id
+                    // 這樣 v1.Records 和 v2.Records 就會變成不同的 Id，不會再衝突了
+                    options.CustomSchemaIds(type => type.FullName); 
+                });
 
                 builder.Services.AddSerilog();
                 builder.Services.AddHttpClient();

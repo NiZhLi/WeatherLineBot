@@ -2,9 +2,9 @@
 using WeatherBot.Dtos.Domain;
 using WeatherBot.Services;
 
-namespace WeatherBot.Controllers
+namespace WeatherBot.Controllers.Domain.v1
 {
-    [Route("api/[controller]")]
+    [Route("api/[controller]/v1")]
     [ApiController]
     public class DomainController(
         DomainWeatherService domainWeatherService,

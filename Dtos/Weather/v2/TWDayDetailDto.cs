@@ -1,4 +1,4 @@
-﻿namespace WeatherBot.Dtos.Weather
+﻿namespace WeatherBot.Dtos.Weather.v2
 {
     public class TWDayDetailDto
     {

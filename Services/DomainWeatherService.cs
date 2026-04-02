@@ -1,5 +1,7 @@
-﻿using WeatherBot.Dtos.Webhook;
+﻿using MongoDB.Driver.Linq;
 using WeatherBot.Dtos.Domain;
+using WeatherBot.Dtos.Weather.v2;
+using WeatherBot.Dtos.Webhook;
 
 namespace WeatherBot.Services
 {
@@ -47,7 +49,7 @@ namespace WeatherBot.Services
                 return new WeatherDetailDto();
             }
 
-            List<string> GetElementValues(string elementName, Func<Dtos.Weather.Elementvalue, string?> selector)
+            List<string> GetElementValues(string elementName, Func<Elementvalue, string?> selector)
             {
                 return locationData.WeatherElement
                     .Where(e => e.ElementName == elementName)
@@ -82,7 +84,6 @@ namespace WeatherBot.Services
             };
         }
 
-        // 天氣
         public async Task<string> GetTomorrowWeatherInfoAsync(DateTime nowDateTime, string location)
         {
             var tomorrowStartDate = nowDateTime.Date.AddDays(1);
@@ -116,7 +117,122 @@ namespace WeatherBot.Services
             return formattedMessage;
         }
 
-        
+
+        /*
+         * version 2
+         */
+
+        // 時段判斷
+        public async Task<WeatherDto> GetTodayWeatherInfoAsync(DateTime nowDateTime, string location)
+        {
+            DateTime timeFrom = nowDateTime;
+            DateTime timeTo = nowDateTime;
+
+            if (nowDateTime.Hour >= 6 && nowDateTime.Hour < 18) // 今日白天(06:00 - 18:00)
+            {
+                timeTo = nowDateTime.Date.AddHours(18); // 晚上6點(溫度等只到17時)
+            }
+            else if(nowDateTime.Hour >= 18) // 今晚明晨(18:00 - 06:00)
+            {
+                timeTo = nowDateTime.Date.AddDays(1).AddHours(6);
+            }
+            else if(nowDateTime.Hour < 6) // 今晨昨晚(18:00 - 06:00)，
+            {
+                timeTo = nowDateTime.Date.AddHours(6); // 今天早上6點
+            }
+
+            var element = new List<string> { "溫度", "相對濕度", "體感溫度", "風速", "3小時降雨機率", "天氣現象" };
+
+            // 使用 WeatherService 取得當天天氣資訊
+            var data = await _weatherService.ThreeDayDetailAsync(location, element, timeFrom, timeTo);
+
+            // 把 map 工作交給獨立的方法
+            var weatherDetail = WeatherDtoMap(data);
+
+            if (weatherDetail.TimePoints == null || !weatherDetail.TimePoints.Any())
+            {
+                return null;
+            }
+
+            return weatherDetail;
+        }
+
+        // 明天白天 (06:00 - 18:00)
+        public async Task<WeatherDto> GetTomorrowDaytimeWeatherInfoAsync(DateTime nowDateTime, string location)
+        {
+            var tomorrowStartDate = nowDateTime.Date.AddDays(1);
+            var startTime = tomorrowStartDate.AddHours(6); // 明天早上6點
+            var timeTo = tomorrowStartDate.AddHours(18); // 明天晚上6點(溫度等只到17時)
+
+            var element = new List<string> { "溫度", "相對濕度", "體感溫度", "風速", "3小時降雨機率", "天氣現象" };
+
+            // 使用 WeatherService 取得當天天氣資訊
+            var data = await _weatherService.ThreeDayDetailAsync(location, element, startTime, timeTo);
+
+            // 把 map 工作交給獨立的方法
+            var weatherDetail = WeatherDtoMap(data);
+
+            if (weatherDetail.TimePoints == null || !weatherDetail.TimePoints.Any())
+            {
+                return null;
+            }
+
+            return weatherDetail;
+        }
+
+        private WeatherDto WeatherDtoMap(TWDayDetailDto data)
+        {
+            // 提取天氣資訊
+            var weatherElements = data.records.Locations.FirstOrDefault()?.Location.FirstOrDefault()?.WeatherElement;
+            if (weatherElements == null)
+            {
+                return new WeatherDto { TimePoints = [] };
+            }
+
+            var allTimeRecords = weatherElements.SelectMany(we => we.Time.Select(t => new { we.ElementName, TimeData = t }));
+
+            var pointRecords = allTimeRecords.Where(x => x.TimeData.DataTime != default).ToList();
+            var periodRecords = allTimeRecords.Where(x => x.TimeData.StartTime != default).ToList();
+
+            var points = pointRecords
+                .GroupBy(x => x.TimeData.DataTime)
+                .Select(g =>
+                {
+                    Elementvalue? GetElement(string name) => g.FirstOrDefault(x => x.ElementName == name)?.TimeData.ElementValue?.FirstOrDefault();
+                    return new WeatherTimePointDto.PointElement
+                    {
+                        DataTime = g.Key,
+                        Temperature = GetElement("溫度")?.Temperature ,
+                        Humidity = GetElement("相對濕度")?.RelativeHumidity,
+                        ApparentTemperature = GetElement("體感溫度")?.ApparentTemperature,
+                        BeaufortScale = GetElement("風速")?.BeaufortScale
+                    };
+                })
+                .OrderBy(p => p.DataTime)
+                .ToList();
+
+            var periods = periodRecords
+                .GroupBy(x => new { x.TimeData.StartTime, x.TimeData.EndTime })
+                .Select(g =>
+                {
+                    Elementvalue? GetElement(string name) => g.FirstOrDefault(x => x.ElementName == name)?.TimeData.ElementValue?.FirstOrDefault();
+                    return new WeatherTimePointDto.PeriodElement
+                    {
+                        StartTime = g.Key.StartTime,
+                        EndTime = g.Key.EndTime,
+                        PrecipitationProbability = GetElement("3小時降雨機率")?.ProbabilityOfPrecipitation,
+                        WeatherPhenomenon = GetElement("天氣現象")?.Weather
+                    };
+                })
+                .OrderBy(p => p.StartTime)
+                .ToList();
+
+            return new WeatherDto 
+            { 
+                TimePoints = points,
+                TimePeriod = periods
+            };
+        }
 
     }
 }
