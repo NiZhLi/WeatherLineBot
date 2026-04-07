@@ -122,7 +122,7 @@ namespace WeatherBot.Services
          * version 2
          */
 
-        // 時段判斷
+        // 時段天氣
         public async Task<WeatherDto> GetTodayWeatherInfoAsync(DateTime nowDateTime, string location)
         {
             DateTime timeFrom = nowDateTime;
@@ -156,6 +156,30 @@ namespace WeatherBot.Services
 
             return weatherDetail;
         }
+
+
+        // 12小時後天氣
+        public async Task<WeatherDto> Get12HrWeatherInfoAsync(DateTime nowDateTime, string location)
+        {
+            DateTime timeFrom = nowDateTime;
+            DateTime timeTo = nowDateTime.AddHours(12);
+
+            var element = new List<string> { "溫度", "相對濕度", "體感溫度", "風速", "3小時降雨機率", "天氣現象" };
+
+            // 使用 WeatherService 取得當天天氣資訊
+            var data = await _weatherService.ThreeDayDetailAsync(location, element, timeFrom, timeTo);
+
+            // 把 map 工作交給獨立的方法
+            var weatherDetail = WeatherDtoMap(data);
+
+            if (weatherDetail.TimePoints == null || !weatherDetail.TimePoints.Any())
+            {
+                return null;
+            }
+
+            return weatherDetail;
+        }
+
 
         // 明天白天 (06:00 - 18:00)
         public async Task<WeatherDto> GetTomorrowDaytimeWeatherInfoAsync(DateTime nowDateTime, string location)

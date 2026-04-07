@@ -1,6 +1,7 @@
 using Serilog;
 using Serilog.Events;
 using WeatherBot.Services;
+using WeatherBot.Services.V2;
 using WeatherBot.Services.LineMessaging;
 using WeatherBot.Services.LineMessaging.Handlers;
 using WeatherBot.Services.LineMessaging.Strategies;
@@ -32,17 +33,21 @@ namespace WeatherBot
                 builder.Services.AddEndpointsApiExplorer();
                 builder.Services.AddSwaggerGen(options =>
                 {
-                    // 讓 Swagger 使用包含命名空間的完整類別名稱作為 Schema Id
-                    // 這樣 v1.Records 和 v2.Records 就會變成不同的 Id，不會再衝突了
+                    // 讓 Swagger 使用包含命名空間的完整類別名稱作為 Schema Id，使不同空間同一名稱class不衝突
                     options.CustomSchemaIds(type => type.FullName); 
                 });
 
                 builder.Services.AddSerilog();
                 builder.Services.AddHttpClient();
 
+                builder.Services.AddScoped<KernelFactory>();
+                builder.Services.AddScoped(sp => sp.GetRequiredService<KernelFactory>().Create());
+
                 builder.Services.AddScoped<WeatherOpenDataService>();
                 builder.Services.AddScoped<DomainWeatherService>();
                 builder.Services.AddScoped<DomainMessageService>();
+                builder.Services.AddScoped<WeatherPlugin>();
+                builder.Services.AddScoped<WeatherChatService>();
                 builder.Services.AddSingleton<ITaiwanLocationResolver, TaiwanLocationResolver>();
                 builder.Services.AddSingleton<IUserPreferenceStore, MongoUserPreferenceStore>();
                 builder.Services.AddSingleton<ILocationChangeStateStore, InMemoryLocationChangeStateStore>();
